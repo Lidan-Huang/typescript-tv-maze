@@ -134,3 +134,10 @@ function populateEpisodes(episodes:IEpisode[]) {
 /**Handle episodes button, after click, show the episodes of the show 
  */
 
+async function getEpisodesAndDisplay(evt: JQuery.ClickEvent) : Promise<void>{
+  const showId : number = $(evt.target).closest('.Show').data('show-id');
+  const episodes : IEpisode[] = await getEpisodesOfShow(showId);
+  populateEpisodes(episodes);
+}
+
+$showsList.on("click", ".Show-getEpisodes", getEpisodesAndDisplay);
