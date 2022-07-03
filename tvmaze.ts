@@ -4,9 +4,10 @@ import * as $ from 'jquery';
 const $showsList = $("#showsList");
 const $episodesArea = $("#episodesArea");
 const $searchForm = $("#searchForm");
+const $episodesList = $("#episodesList");
 
 const MISSING_IMAGE_URL = "./defaultImg.png";
-
+const BASIC_URL = "https://api.tvmaze.com/";
 
 interface IShowFromApi {
   id: number,
@@ -19,6 +20,13 @@ interface IShow extends Omit<IShowFromApi, "image"> {
   image: string
 }
 
+interface IEpisode {
+  id: number,
+  name: string,
+  season: string,
+  number: string
+}
+
 /** Given a search term, search for tv shows that match that query.
  *
  *  Returns (promise) array of show objects: [show, show, ...].
@@ -28,7 +36,7 @@ interface IShow extends Omit<IShowFromApi, "image"> {
 
 async function getShowsByTerm(term: string): Promise<IShow[]> {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
-  const res = await axios.get(`https://api.tvmaze.com/search/shows?q=${term}`);
+  const res = await axios.get(`${BASIC_URL}search/shows?q=${term}`);
   
   return res.data.map((item:{ show: IShowFromApi}) :IShow => {
     const show = item.show;
@@ -92,8 +100,37 @@ $searchForm.on("submit", async function (evt) {
  *      { id, name, season, number }
  */
 
-// async function getEpisodesOfShow(id) { }
+async function getEpisodesOfShow(id:number) {
+  const res = await axios.get(`${BASIC_URL}shows/${id}/episodes`);
+  return res.data.map((item:IEpisode) => {
+    return {
+      id: item.id,
+      name: item.name,
+      season: item.season,
+      number: item.number
+    }
+  });
+}
 
-/** Write a clear docstring for this function... */
+/** Get a list of episodes, create markup for each and to DOM 
+ */
 
-// function populateEpisodes(episodes) { }
+function populateEpisodes(episodes:IEpisode[]) { 
+  $episodesList.empty();
+
+  for (let episode of episodes) {
+    const $episode = $(`
+      <li> 
+        ${episode.name} (season ${episode.season}, number ${episode.number})
+      </li>
+    `);
+    $episodesList.append($episode);
+  }
+
+  $episodesArea.show();
+}
+
+
+/**Handle episodes button, after click, show the episodes of the show 
+ */
+
