@@ -5,13 +5,14 @@ const $showsList = $("#showsList");
 const $episodesArea = $("#episodesArea");
 const $searchForm = $("#searchForm");
 
-const MISSING_IMAGE_URL = "https://media.istockphoto.com/photos/retro-tv-blank-screen-template-mockup-on-yellow-background-picture-id1295939927?b=1&k=20&m=1295939927&s=170667a&w=0&h=OXeJ6J4EAxV1pg5a_T7BCPr5Q9_yqv3lnqrXadsuDSk="
+const MISSING_IMAGE_URL = "./defaultImg.png";
+
 
 interface IShowFromApi {
   id: number,
   name: string,
   summary: string,
-  image: { medium: string } | null,
+  image: { medium: string } | null
 }
 
 interface IShow extends Omit<IShowFromApi, "image"> {
@@ -29,21 +30,21 @@ async function getShowsByTerm(term: string): Promise<IShow[]> {
   // ADD: Remove placeholder & make request to TVMaze search shows API.
   const res = await axios.get(`https://api.tvmaze.com/search/shows?q=${term}`);
   
-  return res.data.map((item:{ show: IShowFromApi}) :IShow=> {
+  return res.data.map((item:{ show: IShowFromApi}) :IShow => {
     const show = item.show;
     return {
       id: show.id,
       name: show.name,
       summary: show.summary,
       image: show.image?.medium || MISSING_IMAGE_URL
-    }
+    };
   });
 }
 
 
 /** Given list of shows, create markup for each and to DOM */
 
-function populateShows(shows) {
+function populateShows(shows:IShow[]) {
   $showsList.empty();
 
   for (let show of shows) {
@@ -51,8 +52,8 @@ function populateShows(shows) {
         `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img
-              src="http://static.tvmaze.com/uploads/images/medium_portrait/160/401704.jpg"
-              alt="Bletchly Circle San Francisco"
+              src= "${show.image}"
+              alt="${show.name}"
               class="w-25 me-3">
            <div class="media-body">
              <h5 class="text-primary">${show.name}</h5>
@@ -73,8 +74,8 @@ function populateShows(shows) {
  *    Hide episodes area (that only gets shown if they ask for episodes)
  */
 
-async function searchForShowAndDisplay() {
-  const term = $("#searchForm-term").val();
+async function searchForShowAndDisplay() : Promise<void> {
+  const term : string = $("#searchForm-term").val() as string;
   const shows = await getShowsByTerm(term);
 
   $episodesArea.hide();
